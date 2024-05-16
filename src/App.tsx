@@ -1,9 +1,16 @@
 import React, { useState, useCallback } from "react";
 import ReactDOM from "react-dom";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DraggingStyle,
+  NotDraggingStyle,
+  DropResult,
+} from "react-beautiful-dnd";
 
-function App() {
-  const getItems = (count) =>
+export default function App() {
+  const getItems = (count: number) =>
     Array.from({ length: count }, (v, k) => k).map((k) => ({
       id: `item-${k}`,
       content: `item ${k}`,
@@ -11,7 +18,11 @@ function App() {
 
   const [items, setItems] = useState(getItems(10));
 
-  const reorder = (list, startIndex, endIndex) => {
+  const reorder = (
+    list: Iterable<unknown> | ArrayLike<unknown>,
+    startIndex: number,
+    endIndex: number
+  ) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
@@ -19,7 +30,7 @@ function App() {
   };
 
   const onDragEnd = useCallback(
-    (result) => {
+    (result: DropResult) => {
       if (!result.destination) {
         return;
       }
@@ -68,10 +79,12 @@ function App() {
     </DragDropContext>
   );
 }
-
 const GRID = 8;
 
-const getItemStyle = (isDragging, draggableStyle) => ({
+const getItemStyle = (
+  isDragging: boolean,
+  draggableStyle: DraggingStyle | NotDraggingStyle | undefined
+) => ({
   userSelect: "none",
   padding: GRID * 2,
   margin: `0 0 ${GRID}px 0`,
@@ -79,10 +92,8 @@ const getItemStyle = (isDragging, draggableStyle) => ({
   ...draggableStyle,
 });
 
-const getListStyle = (isDraggingOver) => ({
+const getListStyle = (isDraggingOver: boolean) => ({
   background: isDraggingOver ? "lightblue" : "lightgrey",
   padding: GRID,
   width: 250,
 });
-
-ReactDOM.render(<App />, document.getElementById("root"));
