@@ -7,15 +7,12 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import styled from "styled-components";
+import { createColumns } from "./utils/createColumns";
 
 export default function App() {
-  const getItems = (count: number) =>
-    Array.from({ length: count }, (v, k) => k).map((k) => ({
-      id: `item-${k}`,
-      content: `item ${k}`,
-    }));
-
-  const [items, setItems] = useState(getItems(10));
+  const [columns, setColumns] = useState(
+    createColumns({ columnCount: 4, itemsPerColumn: 10 })
+  );
 
   const reorder = (
     list: Iterable<unknown> | ArrayLike<unknown>,
@@ -34,47 +31,55 @@ export default function App() {
         return;
       }
 
-      const newItems = reorder(
-        items,
-        result.source.index,
-        result.destination.index
-      );
+      // const newItems = reorder(
+      //   items,
+      //   result.source.index,
+      //   result.destination.index
+      // );
 
-      setItems(newItems);
+      // setItems(newItems);
     },
-    [items]
+    [columns]
   );
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="droppable">
-        {(provided, snapshot) => (
-          <DragList
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            $isDraggingOver={snapshot.isDraggingOver}
-          >
-            {items.map((item, index) => (
-              <Draggable key={item.id} draggableId={item.id} index={index}>
-                {(provided, snapshot) => (
-                  <DragItem
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    $isDragging={snapshot.isDragging}
-                  >
-                    {item.content}
-                  </DragItem>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-          </DragList>
-        )}
-      </Droppable>
+      <DragDropContainer>
+        {Object.entries(columns).map(([columnId, columnValue]) => (
+          <Droppable droppableId={columnId}>
+            {(provided, snapshot) => (
+              <DragList
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                $isDraggingOver={snapshot.isDraggingOver}
+              >
+                {columnValue.items.map((item, index) => (
+                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                    {(provided, snapshot) => (
+                      <DragItem
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        $isDragging={snapshot.isDragging}
+                      >
+                        {item.content}
+                      </DragItem>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </DragList>
+            )}
+          </Droppable>
+        ))}
+      </DragDropContainer>
     </DragDropContext>
   );
 }
+
+const DragDropContainer = styled.div`
+  display: flex;
+`;
 
 const DragItem = styled.div<{ $isDragging: boolean }>`
   padding: 16px;
