@@ -4,10 +4,9 @@ import {
   DragDropContext,
   Droppable,
   Draggable,
-  DraggingStyle,
-  NotDraggingStyle,
   DropResult,
 } from "react-beautiful-dnd";
+import styled from "styled-components";
 
 export default function App() {
   const getItems = (count: number) =>
@@ -50,38 +49,46 @@ export default function App() {
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="droppable">
         {(provided, snapshot) => (
-          <div
+          <DragList
             {...provided.droppableProps}
             ref={provided.innerRef}
-            style={getListStyle(snapshot.isDraggingOver)}
+            $isDraggingOver={snapshot.isDraggingOver}
           >
             {items.map((item, index) => (
               <Draggable key={item.id} draggableId={item.id} index={index}>
                 {(provided, snapshot) => (
-                  <div
+                  <DragItem
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    style={getItemStyle(
-                      snapshot.isDragging,
-                      provided.draggableProps.style
-                    )}
+                    $isDragging={snapshot.isDragging}
                   >
                     {item.content}
-                  </div>
+                  </DragItem>
                 )}
               </Draggable>
             ))}
             {provided.placeholder}
-          </div>
+          </DragList>
         )}
       </Droppable>
     </DragDropContext>
   );
 }
-const GRID = 8;
 
-const getItemStyle = (
+const DragItem = styled.div<{ $isDragging: boolean }>`
+  padding: 16px;
+  margin: 0 0 8px 0;
+  background: ${(props) => (props.$isDragging ? "lightgreen" : "grey")};
+`;
+
+const DragList = styled.div<{ $isDraggingOver: boolean }>`
+  padding: 8px;
+  width: 250px;
+  background: ${(props) => (props.$isDraggingOver ? "lightblue" : "lightgrey")};
+`;
+
+/* const getItemStyle = (
   isDragging: boolean,
   draggableStyle: DraggingStyle | NotDraggingStyle | undefined
 ) => ({
@@ -90,10 +97,10 @@ const getItemStyle = (
   margin: `0 0 ${GRID}px 0`,
   background: isDragging ? "lightgreen" : "grey",
   ...draggableStyle,
-});
+}); */
 
-const getListStyle = (isDraggingOver: boolean) => ({
-  background: isDraggingOver ? "lightblue" : "lightgrey",
-  padding: GRID,
-  width: 250,
-});
+// const getListStyle = (isDraggingOver: boolean) => ({
+//   background: isDraggingOver ? "lightblue" : "lightgrey",
+//   padding: GRID,
+//   width: 250,
+// });
