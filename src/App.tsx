@@ -1,9 +1,6 @@
-import React, { useState, useCallback } from "react";
-import ReactDOM from "react-dom";
+import { useState, useCallback } from "react";
 import {
   DragDropContext,
-  Droppable,
-  Draggable,
   DropResult,
   DragUpdate,
   DragStart,
@@ -12,9 +9,11 @@ import styled from "styled-components";
 import { createColumns } from "./utils/createColumns";
 import { getNumberId } from "./utils/getNumberId";
 import { orderItem } from "./utils/orderItem";
+import { Columns } from "./types/column";
+import DragDropColumn from "./components/DragDropColumn";
 
 export default function App() {
-  const [columns, setColumns] = useState(
+  const [columns, setColumns] = useState<Columns>(
     createColumns({ columnCount: 4, itemsPerColumn: 10 })
   );
   const [activeColumn, setActiveColumn] = useState<string>();
@@ -24,12 +23,14 @@ export default function App() {
   const clearSelectedItem = useCallback(() => {
     setSelectedItems([]);
     setActiveColumn(undefined);
+    setIsDropActive(true);
   }, []);
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
       if (!result.destination || !isDropActive) {
         clearSelectedItem();
+        alert("해당 섹션에는 드래그가 제한됩니다.");
         return;
       }
 
@@ -99,7 +100,7 @@ export default function App() {
     setIsDropActive(isDropActive);
   }, []);
 
-  const selectItems = useCallback(
+  const selectItem = useCallback(
     (columnId: string, itemId: string) => {
       if (activeColumn && activeColumn !== columnId) return;
       if (selectedItems.length === 0) setActiveColumn(columnId);
@@ -123,38 +124,13 @@ export default function App() {
     >
       <DragDropContainer>
         {Object.entries(columns).map(([columnId, columnValue]) => (
-          <Droppable droppableId={columnId} key={columnId}>
-            {(provided, snapshot) => (
-              <DragList
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                $isDraggingOver={snapshot.isDraggingOver}
-              >
-                {columnValue.items.map((item, index) => (
-                  <Draggable key={item.id} draggableId={item.id} index={index}>
-                    {(provided, snapshot) => (
-                      <DragItem
-                        onClick={() => selectItems(columnId, item.id)}
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        $isDragging={snapshot.isDragging}
-                        $isDropActive={isDropActive}
-                        $isSelected={selectedItems.includes(item.id)}
-                      >
-                        {item.content}
-                        {selectedItems.length > 1 &&
-                          selectedItems.includes(item.id) && (
-                            <CountItem>{selectedItems.length}</CountItem>
-                          )}
-                      </DragItem>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </DragList>
-            )}
-          </Droppable>
+          <DragDropColumn
+            columnId={columnId}
+            columnValue={columnValue}
+            isDropActive={isDropActive}
+            selectedItems={selectedItems}
+            onClickItem={selectItem}
+          />
         ))}
       </DragDropContainer>
     </DragDropContext>
@@ -163,39 +139,5 @@ export default function App() {
 
 const DragDropContainer = styled.div`
   display: flex;
-`;
-
-const DragItem = styled.div<{
-  $isDragging: boolean;
-  $isDropActive: boolean;
-  $isSelected: boolean;
-}>`
-  position: relative;
-  padding: 16px;
-  margin: 0 0 8px 0;
-  background: ${(props) =>
-    props.$isSelected ? (props.$isDropActive ? "lightgreen" : "red") : "gray"};
-`;
-
-const DragList = styled.div<{ $isDraggingOver: boolean }>`
-  padding: 8px;
-  width: 250px;
-  background: ${(props) => (props.$isDraggingOver ? "lightblue" : "lightgrey")};
-`;
-
-const CountItem = styled.div`
-  width: 20px;
-  height: 20px;
-  border: 1px solid black;
-  border-radius: 20px;
-
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: blue;
-  color: white;
+  gap: 20px;
 `;
