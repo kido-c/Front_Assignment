@@ -12,7 +12,7 @@ export default {
   },
 
   resolve: {
-    extensions: [".js", ".jsx"],
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
 
   entry: "./src/index",
@@ -20,9 +20,15 @@ export default {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)?$/,
+        test: /\.(js|jsx|ts|tsx)?$/,
         use: [{ loader: "babel-loader" }],
         exclude: /node_modules/,
+      },
+
+      {
+        test: /\.(ts|tsx)?$/,
+        use: ["ts-loader"],
+        exclude: ["/node_modules/"],
       },
       {
         test: /\.css$/,
